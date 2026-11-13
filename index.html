@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>장성경 — Service · UX Planner</title>
+<style>
+@import "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css";
+:root{--bg:#0A0A0A;--bg-alt:#111111;--bg-card:#161616;--text-primary:#F0F0F0;--text-secondary:#888888;--accent:#39FF14;--border:#222222;--pad:clamp(20px,4vw,56px)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text-primary);font-family:Pretendard,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--text-primary);text-decoration:none}
+a:hover{color:var(--accent)}
+::selection{background:var(--accent);color:#000}
+@media (hover:hover) and (pointer:fine){body,a,button{cursor:none}}
+
+#progress{position:fixed;top:0;left:0;height:2px;width:100%;background:var(--accent);transform-origin:0 50%;transform:scaleX(0);z-index:1000}
+.cursor-dot,.cursor-ring{position:fixed;top:0;left:0;border-radius:50%;pointer-events:none;z-index:999;transform:translate(-50%,-50%)}
+.cursor-dot{width:6px;height:6px;background:var(--accent);transition:background .2s}
+.cursor-ring{width:36px;height:36px;border:1.5px solid rgba(57,255,20,.5);transition:width .3s cubic-bezier(.2,.8,.2,1),height .3s cubic-bezier(.2,.8,.2,1),background .3s,border-color .3s;mix-blend-mode:normal}
+body.hovering .cursor-ring{width:52px;height:52px;background:var(--accent);border-color:var(--accent)}
+body.hovering .cursor-dot{background:#000}
+@media (hover:none),(pointer:coarse){.cursor-dot,.cursor-ring{display:none}}
+
+.label{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.display{font-size:clamp(56px,9vw,100px);font-weight:900;line-height:.9;letter-spacing:-.045em;text-transform:uppercase}
+.display .o{color:transparent;-webkit-text-stroke:1.5px var(--text-primary)}
+.body{font-size:16px;line-height:1.9;color:var(--text-secondary);text-wrap:pretty}
+section{padding:clamp(96px,12vw,160px) var(--pad);border-top:1px solid var(--border);position:relative}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:clamp(48px,6vw,88px);flex-wrap:wrap}
+.sec-head .label{margin-bottom:20px;display:block}
+.sec-num{font-size:13px;font-weight:700;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+
+/* HERO */
+.hero{height:100vh;min-height:640px;position:relative;padding:var(--pad);display:flex;flex-direction:column;justify-content:space-between;border:0;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.03;background:repeating-linear-gradient(90deg,#fff 0 1px,transparent 1px 80px),repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 80px)}
+.hero-top,.hero-bottom{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;position:relative}
+.hero-top .year{font-size:13px;font-weight:700;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+.hero-name{position:relative}
+.hero-name .line{display:block;font-size:clamp(56px,9vw,120px);font-weight:900;line-height:.88;letter-spacing:-.05em;text-transform:uppercase}
+.hero-name .line:nth-child(2){padding-left:clamp(40px,10vw,180px)}
+.hero-name .line:nth-child(3) em{font-style:normal;color:var(--accent)}
+.hero-name .kr{position:absolute;right:0;top:12px;font-size:14px;font-weight:700;color:var(--text-secondary);letter-spacing:.3em}
+.hero-bottom{align-items:flex-end}
+.hero-bottom p{max-width:380px;font-size:15px;line-height:1.7;color:var(--text-secondary)}
+.hero-bottom p strong{color:var(--text-primary);font-weight:600}
+.scroll{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--text-primary);white-space:nowrap}
+
+/* MARQUEE */
+.marquee{background:var(--accent);color:#000;overflow:hidden;padding:18px 0;white-space:nowrap}
+.marquee-track{display:inline-flex;animation:marquee 28s linear infinite}
+.marquee-track span{font-size:clamp(18px,2.2vw,28px);font-weight:800;text-transform:uppercase;letter-spacing:-.01em;padding:0 28px;display:inline-flex;align-items:center;gap:56px}
+.marquee-track span::after{content:"✦";font-size:.7em}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:5fr 7fr;gap:clamp(32px,6vw,96px)}
+blockquote{border-top:2px solid var(--accent);padding-top:28px;font-size:clamp(22px,2.4vw,30px);font-weight:700;line-height:1.45;letter-spacing:-.02em;color:var(--text-primary);text-wrap:balance}
+blockquote em{font-style:normal;color:var(--accent)}
+blockquote cite{display:block;margin-top:20px;font-size:12px;font-weight:600;font-style:normal;color:var(--text-secondary);letter-spacing:.04em}
+.about-right .body+.body{margin-top:20px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:56px}
+.card{background:var(--bg-card);padding:32px 28px;transition:background .3s}
+.card:hover{background:#1b1b1b}
+.card .n{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.14em}
+.card h3{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:18px 0 10px}
+.card p{font-size:14px;line-height:1.75;color:var(--text-secondary)}
+
+/* WORKS */
+#works{background:var(--bg-alt)}
+.works-list{border-top:1px solid var(--border)}
+.work-row{position:relative;display:grid;grid-template-columns:64px minmax(0,1.4fr) minmax(0,1.6fr) 150px;gap:24px;align-items:center;padding:30px var(--pad);margin:0 calc(var(--pad)*-1);border-bottom:1px solid var(--border);overflow:hidden;isolation:isolate}
+.work-row::before{content:"";position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left center;transition:transform .45s cubic-bezier(.45,0,.55,1);z-index:-1}
+.work-row:hover::before{transform:scaleX(1)}
+.work-row *{transition:color .3s}
+.work-row:hover *{color:#000!important}
+.work-row .idx{font-size:13px;font-weight:700;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+.work-row h3{font-size:clamp(20px,2.2vw,28px);font-weight:800;letter-spacing:-.03em;line-height:1.25}
+.work-row h3 small{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--text-secondary);margin-top:6px}
+.work-row p{font-size:14px;line-height:1.7;color:var(--text-secondary)}
+.work-row .date{font-size:13px;font-weight:600;color:var(--text-secondary);text-align:right;font-variant-numeric:tabular-nums}
+.kpi{margin-top:clamp(64px,8vw,112px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--border);background:var(--bg)}
+.kpi>div{padding:40px 28px;border-right:1px solid var(--border)}
+.kpi>div:last-child{border-right:0}
+.kpi .v{font-size:clamp(48px,5.5vw,80px);font-weight:900;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums;color:var(--accent)}
+.kpi .v sup{font-size:.4em;vertical-align:top;margin-left:4px;color:var(--text-primary)}
+.kpi .k{margin-top:18px;font-size:14px;line-height:1.6;color:var(--text-secondary)}
+.kpi .k strong{display:block;color:var(--text-primary);font-weight:700;font-size:15px;margin-bottom:4px}
+
+/* EXPERIENCE */
+.tl{border-top:1px solid var(--border)}
+.tl-row{display:grid;grid-template-columns:200px minmax(0,1fr) minmax(0,1.3fr);gap:32px;padding:40px 0;border-bottom:1px solid var(--border)}
+.tl-row .when{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.tl-row .when span{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-top:6px}
+.tl-row .when .now{color:var(--accent)}
+.tl-row h3{font-size:24px;font-weight:800;letter-spacing:-.03em;line-height:1.3}
+.tl-row .org{font-size:14px;color:var(--text-secondary);margin-top:6px}
+.tl-row ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.tl-row li{font-size:15px;line-height:1.7;color:var(--text-secondary);padding-left:18px;position:relative}
+.tl-row li::before{content:"";position:absolute;left:0;top:.8em;width:8px;height:1px;background:var(--accent)}
+.sub-label{margin:clamp(72px,8vw,112px) 0 24px;display:block}
+
+/* CONTACT */
+#contact{min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;gap:80px}
+.talk{font-size:clamp(80px,17vw,260px);font-weight:900;line-height:.86;letter-spacing:-.06em;text-transform:uppercase}
+.talk span{display:block}
+.talk span:last-child{color:var(--accent);padding-left:clamp(40px,12vw,240px)}
+.contact-row{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;flex-wrap:wrap}
+.cta-wrap{padding:24px;margin:-24px}
+.cta{display:inline-flex;align-items:center;gap:18px;padding:26px 40px;border:1.5px solid var(--accent);border-radius:999px;font-size:clamp(18px,2.2vw,28px);font-weight:800;letter-spacing:-.02em;color:var(--text-primary);background:transparent;transition:background .3s,color .3s;will-change:transform}
+.cta:hover{background:var(--accent);color:#000}
+.cta .arr{font-size:.9em}
+.meta{display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--text-secondary)}
+.meta a{color:var(--text-primary)}
+.meta a:hover{color:var(--accent)}
+footer{display:flex;justify-content:space-between;gap:16px;padding-top:32px;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary);flex-wrap:wrap}
+
+@media (max-width:768px){
+  .hero-name .kr{position:static;display:block;margin-top:20px}
+  .hero-bottom{flex-direction:column;align-items:flex-start}
+  .about-grid{grid-template-columns:1fr}
+  .cards{grid-template-columns:1fr}
+  .work-row{grid-template-columns:40px minmax(0,1fr);gap:10px 16px}
+  .work-row p,.work-row .date{grid-column:2;text-align:left}
+  .kpi{grid-template-columns:1fr 1fr}
+  .kpi>div:nth-child(2){border-right:0}
+  .kpi>div:nth-child(-n+2){border-bottom:1px solid var(--border)}
+  .tl-row{grid-template-columns:1fr;gap:16px;padding:32px 0}
+  .cta{padding:20px 28px}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="cursor-ring"></div>
+<div class="cursor-dot"></div>
+
+<header class="hero" id="top">
+  <div class="hero-top">
+    <div class="label hero-role">Service · UI/UX Planner</div>
+    <div class="year">2026</div>
+  </div>
+  <h1 class="hero-name" aria-label="장성경 Jang Sung Kyung">
+    <span class="line">Jang</span>
+    <span class="line">Sung</span>
+    <span class="line">Kyung<em>.</em></span>
+    <span class="kr">장성경</span>
+  </h1>
+  <div class="hero-bottom">
+    <p><strong>7년 넘게</strong>, 금융·커머스·교육 시스템의 복잡한 여정을 사용자가 한눈에 이해하는 구조로 바꿔온 서비스 기획자입니다.</p>
+    <a href="#about" class="scroll">Scroll ↓</a>
+  </div>
+</header>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Service Planning</span><span>Storyboard</span><span>App Planning</span><span>UI·UX Planning</span><span>Fintech UX</span><span>Figma</span><span>Data Analysis</span><span>Content Planning</span>
+    <span>Service Planning</span><span>Storyboard</span><span>App Planning</span><span>UI·UX Planning</span><span>Fintech UX</span><span>Figma</span><span>Data Analysis</span><span>Content Planning</span>
+  </div>
+</div>
+
+<section id="about">
+  <div class="sec-head">
+    <div><span class="label">01 — About</span><h2 class="display reveal-h">Ab <span class="o">out</span></h2></div>
+    <div class="sec-num">01 / 04</div>
+  </div>
+  <div class="about-grid">
+    <div class="about-left">
+      <blockquote class="reveal-p">“일은 힘들고 어렵지만, <em>저 사람 덕분에 해낼 수 있었다.</em>”<cite>— 함께 일하는 사람에게 듣고 싶은 한마디</cite></blockquote>
+    </div>
+    <div class="about-right">
+      <p class="body reveal-p">신한은행 기업뱅킹, KB Pay, KB국민은행 코어뱅킹 PI까지 — 규정과 예외가 촘촘한 금융 서비스에서 사용자의 여정을 다시 설계해 왔습니다. 900개의 메뉴를 업무 기준의 트리로 묶고, 700장의 카드를 가진 사용자를 위해 화면을 새로 만들고, 단순 해지를 상담형 여정으로 바꿨습니다.</p>
+      <p class="body reveal-p">처음엔 낯선 용어를 녹취로 몇 번이고 다시 들으며 따라갔지만, 결국 맡은 메뉴를 끝까지 해내고 다음 메뉴까지 맡게 되는 사람. 심리상담사 1급으로 쌓은 공감과 관찰을, 현업·개발자와의 소통과 사용자 이해에 씁니다.</p>
+      <div class="cards">
+        <div class="card"><div class="n">S—01</div><h3>금융 UX 설계</h3><p>은행·카드사 대형 구축과 운영을 거치며 정책·내규 안에서 쓰기 쉬운 화면을 만듭니다.</p></div>
+        <div class="card"><div class="n">S—02</div><h3>복잡도 해소</h3><p>파편화된 메뉴와 프로세스를 업무 기준으로 재분류해 한눈에 보이는 구조로 바꿉니다.</p></div>
+        <div class="card"><div class="n">S—03</div><h3>끝까지 파고드는 힘</h3><p>모르는 건 묻고, 듣고, 다시 찾아 결국 제 것으로 만듭니다. 오픈까지 밀고 나갑니다.</p></div>
+        <div class="card"><div class="n">S—04</div><h3>공감과 소통</h3><p>상대의 관심사를 빠르게 파악해 다른 의견도 이유로 설득하고 함께 결론을 냅니다.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="works">
+  <div class="sec-head">
+    <div><span class="label">02 — Selected Works</span><h2 class="display reveal-h">Wo <span class="o">rks</span></h2></div>
+    <div class="sec-num">02 / 04</div>
+  </div>
+  <div class="works-list">
+    <a class="work-row" href="#works"><span class="idx">01</span><h3>삼성바이오에피스 의약품 사이트 운영<small>PC · MO · 기여도 100%</small></h3><p>신규 제품 페이지, 채용·기업소개 메뉴 추가와 어드민 고도화.</p><span class="date">2021.06 — 11</span></a>
+    <a class="work-row" href="#works"><span class="idx">02</span><h3>밝은세상안과 서울·부산 운영<small>PC · MO · 기여도 100%</small></h3><p>패럴랙스 메인 리뉴얼, 기업제휴 랜딩 운영, 상담 신청 DB와 메타태그 관리.</p><span class="date">2021.06 — 11</span></a>
+    <a class="work-row" href="#works"><span class="idx">03</span><h3>테팔 이커머스 상품 기획<small>기여도 100%</small></h3><p>월 평균 10개 상세페이지 설계, 제작 일정과 운영 비용 견적 관리.</p><span class="date">2021.07 — 11</span></a>
+    <a class="work-row" href="#works"><span class="idx">04</span><h3>신한은행 기업뱅킹 비대면 전면 구축<small>PC · MO</small></h3><p>대학등록금 메뉴 통합, 비대면 출금계좌 등록, 900개 업무권한 메뉴를 트리 구조로 개선.</p><span class="date">2021.11 — 2022.10</span></a>
+    <a class="work-row" href="#works"><span class="idx">05</span><h3>KB국민카드 KB Pay 운영<small>MW · APP</small></h3><p>매월 15건 이상 이벤트·기획전. 국립수목원 예약, 타인명의 가입 프로세스, 트래블러스 가이드.</p><span class="date">2023.01 — 2024.10</span></a>
+    <a class="work-row" href="#works"><span class="idx">06</span><h3>현대오토에버 교육시스템 전면 구축<small>PC · MO</small></h3><p>현대·기아 교육 예산 품의부터 결재·집행까지 프로세스와 조직별 결재선 정책을 재설계.</p><span class="date">2025.02 — 06</span></a>
+    <a class="work-row" href="#works"><span class="idx">07</span><h3>KB Pay 3.0 구축<small>MW · APP · 기여도 100%</small></h3><p>해외이용혜택 통합, 공공지원금까지 담은 포인트 내역, 700장 보유자를 위한 카드 전체보기.</p><span class="date">2025.07 — 2026.01</span></a>
+    <a class="work-row" href="#works"><span class="idx">08</span><h3>KB국민은행 코어뱅킹 현대화 PI<small>기획 · UX 설계 컨설팅</small></h3><p>조회·관리·해지·이체 여정 표준화. AI 대화형 상담형 해지 여정과 정산 서비스를 신규 설계.</p><span class="date">2026.02 — 04</span></a>
+    <a class="work-row" href="#works"><span class="idx">09</span><h3>메리츠 내부교육 LMS 구축<small>주식회사와일리</small></h3><p>사내 교육 운영을 위한 학습관리시스템 구축 기획.</p><span class="date">와일리 재직 시</span></a>
+  </div>
+  <div class="kpi">
+    <div><div class="v"><span class="count" data-to="7">7</span><sup>YRS+</sup></div><div class="k"><strong>총 경력</strong>서비스·UI/UX 기획</div></div>
+    <div><div class="v"><span class="count" data-to="900">900</span></div><div class="k"><strong>업무권한 메뉴</strong>스크롤 나열 → 업무별 트리</div></div>
+    <div><div class="v"><span class="count" data-to="700">700</span></div><div class="k"><strong>번째 카드까지</strong>스와이프 → 전체보기 스크롤</div></div>
+    <div><div class="v"><span class="count" data-to="15">15</span><sup>+</sup></div><div class="k"><strong>월 이벤트·기획전</strong>KB Pay 운영</div></div>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="sec-head">
+    <div><span class="label">03 — Experience</span><h2 class="display reveal-h">Expe <span class="o">ri</span> ence</h2></div>
+    <div class="sec-num">03 / 04</div>
+  </div>
+  <div class="tl">
+    <div class="tl-row"><div class="when">2023.01 — 2026.06<span>3년 6개월</span></div><div><h3>컨버전스 본부 대리 · 매니저</h3><div class="org">주식회사와일리</div></div><ul><li>KB국민카드 KB Pay 운영 및 3.0 구축</li><li>KB국민은행 코어뱅킹 현대화 PI 컨설팅</li><li>현대오토에버 내부 교육시스템, 메리츠 LMS 구축</li><li>서비스·앱·콘텐츠·UI/UX 기획, 스토리보드</li></ul></div>
+    <div class="tl-row"><div class="when">2021.05 — 2022.10<span>1년 6개월</span></div><div><h3>DI Group 1 Division PM1 · 주임</h3><div class="org">프레임아웃</div></div><ul><li>신한은행 기업뱅킹 비대면 전면 구축</li><li>삼성바이오에피스, 밝은세상안과 사이트 운영</li><li>테팔 이커머스 상품 기획 및 운영</li></ul></div>
+    <div class="tl-row"><div class="when">2019.06 — 2021.05<span>2년</span></div><div><h3>공고관리 · 사원</h3><div class="org">다쏘 (한국전자입찰정보)</div></div><ul><li>공공기관·민간기업 입찰정보 데이터 관리</li><li>조달(계약) 시스템 검수 및 관리</li><li>입찰분석 컨설팅 운영 지원</li></ul></div>
+    <div class="tl-row"><div class="when">2019.03 — 2019.05<span>3개월</span></div><div><h3>마케팅 · 사원</h3><div class="org">청미안</div></div><ul><li>한의원 전담 블로그 바이럴 마케팅</li><li>일일 원고 작성, 게시글 검수·업로드</li></ul></div>
+  </div>
+  <span class="label sub-label">Education · Certificate</span>
+  <div class="tl">
+    <div class="tl-row"><div class="when">2014.03 — 2016.08<span>졸업</span></div><div><h3>실용음악과</h3><div class="org">인천재능대학교</div></div><ul><li>학점 3.3 / 4.5</li></ul></div>
+    <div class="tl-row"><div class="when">2014<span>졸업</span></div><div><h3>고등학교</h3><div class="org">건국대학교사범대학부속고등학교</div></div><ul><li>졸업</li></ul></div>
+    <div class="tl-row"><div class="when">2021.03<span>취득</span></div><div><h3>심리상담사 1급</h3><div class="org">한국교육검정원</div></div><ul><li>사용자 이해와 소통의 기반</li></ul></div>
+  </div>
+</section>
+
+<section id="contact">
+  <div>
+    <div class="sec-head" style="margin-bottom:32px"><span class="label">04 — Contact</span><div class="sec-num">04 / 04</div></div>
+    <h2 class="talk reveal-h"><span>Let's</span><span>Talk.</span></h2>
+  </div>
+  <div class="contact-row">
+    <div class="cta-wrap" id="magnet"><a class="cta" href="mailto:tjdrud8@gmail.com">tjdrud8@gmail.com <span class="arr">↗</span></a></div>
+    <div class="meta"><span>서비스기획 · 앱기획 · UI/UX기획 · 웹에이전시 / IT컨설팅</span><a href="tel:01099349904">010 9934 9904</a><span>Seoul, KR</span></div>
+  </div>
+  <footer><span>© 2026 장성경 Jang Sung Kyung</span><a href="#top">Back to top ↑</a></footer>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  const prog=document.getElementById('progress');
+  const onScroll=()=>{const h=document.documentElement.scrollHeight-innerHeight;prog.style.transform='scaleX('+(h>0?scrollY/h:0)+')'};
+  addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+  if(fine){
+    const dot=document.querySelector('.cursor-dot'),ring=document.querySelector('.cursor-ring');
+    let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+    addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
+    (function loop(){rx+=(mx-rx)*.08;ry+=(my-ry)*.08;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop)})();
+    document.querySelectorAll('a,button,.work-row,.card').forEach(el=>{
+      el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
+      el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
+    });
+    const wrap=document.getElementById('magnet'),btn=wrap.querySelector('.cta');
+    wrap.addEventListener('mousemove',e=>{const r=wrap.getBoundingClientRect();const x=((e.clientX-r.left)/r.width-.5)*24,y=((e.clientY-r.top)/r.height-.5)*24;
+      window.gsap?gsap.to(btn,{x,y,duration:.4,ease:'power3.out'}):btn.style.transform=`translate(${x}px,${y}px)`});
+    wrap.addEventListener('mouseleave',()=>{window.gsap?gsap.to(btn,{x:0,y:0,duration:.7,ease:'elastic.out(1,.4)'}):btn.style.transform=''});
+  }
+
+  if(!window.gsap||!window.ScrollTrigger)return;
+  gsap.registerPlugin(ScrollTrigger);
+  const st=(el)=>({trigger:el,start:'top 85%',once:true});
+
+  gsap.fromTo('.hero-name .line',{clipPath:'inset(0 0 100% 0)',y:40},{clipPath:'inset(0 0 0% 0)',y:0,duration:1.2,stagger:.18,ease:'power4.out'});
+  gsap.from('.hero-role',{y:20,opacity:0,duration:.9,delay:.5,ease:'power3.out'});
+  gsap.from('.hero-top .year,.hero-name .kr,.hero-bottom > *',{opacity:0,duration:1,delay:.8,stagger:.08});
+
+  gsap.utils.toArray('.reveal-h').forEach(el=>gsap.from(el,{y:60,opacity:0,duration:1,ease:'power3.out',scrollTrigger:st(el)}));
+  gsap.utils.toArray('.reveal-p').forEach(el=>gsap.from(el,{y:30,opacity:0,duration:.8,ease:'power3.out',scrollTrigger:st(el)}));
+  gsap.from('.card',{y:30,opacity:0,duration:.8,stagger:.1,ease:'power3.out',scrollTrigger:st('.cards')});
+  gsap.from('.work-row',{x:-20,opacity:0,duration:.7,stagger:.07,ease:'power3.out',scrollTrigger:st('.works-list')});
+  gsap.utils.toArray('.tl').forEach(tl=>gsap.from(tl.querySelectorAll('.tl-row'),{y:20,opacity:0,duration:.7,stagger:.1,ease:'power3.out',scrollTrigger:st(tl)}));
+
+  document.querySelectorAll('.count').forEach(el=>{
+    const to=parseFloat(el.dataset.to),dec=+(el.dataset.dec||0),o={v:0};
+    el.textContent=(0).toFixed(dec);
+    ScrollTrigger.create({trigger:el,start:'top 85%',once:true,onEnter:()=>gsap.to(o,{v:to,duration:2,ease:'power2.out',onUpdate:()=>el.textContent=o.v.toFixed(dec)})});
+  });
+})();
+</script>
+</body>
+</html>
